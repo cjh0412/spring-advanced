@@ -2,6 +2,7 @@ package org.example.expert.domain.manager.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.common.dto.AuthUser;
+import org.example.expert.domain.common.exception.CommonErrorCode;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.manager.dto.request.ManagerSaveRequest;
 import org.example.expert.domain.manager.dto.response.ManagerResponse;
@@ -20,10 +21,12 @@ import org.springframework.util.ObjectUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.example.expert.domain.common.exception.CommonErrorCode.*;
+
 @Service
 @RequiredArgsConstructor
 public class ManagerService {
-
+  // todo : repository 정리 유무 체크하기
     private final ManagerRepository managerRepository;
     private final UserRepository userRepository;
     private final TodoRepository todoRepository;
@@ -33,17 +36,17 @@ public class ManagerService {
         // 일정을 만든 유저
         User user = User.fromAuthUser(authUser);
         Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+                .orElseThrow(() -> new InvalidRequestException(TODO_NOT_FOUND));
 
         if (todo.getUser() == null) {
-            throw new InvalidRequestException("담당자를 등록하려고 하는 유저가 일정을 만든 유저가 유효하지 않습니다.");
+            throw new InvalidRequestException(MANAGER_NOT_ALLOWED);
         }
 
         User managerUser = userRepository.findById(managerSaveRequest.getManagerUserId())
-                .orElseThrow(() -> new InvalidRequestException("등록하려고 하는 담당자 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> new InvalidRequestException(MANAGER_NOT_FOUND));
 
         if (ObjectUtils.nullSafeEquals(user.getId(), managerUser.getId())) {
-            throw new InvalidRequestException("일정 작성자는 본인을 담당자로 등록할 수 없습니다.");
+            throw new InvalidRequestException(TODO_CREATOR_CANNOT_BE_MANAGER);
         }
 
         Manager newManagerUser = new Manager(managerUser, todo);
@@ -58,10 +61,11 @@ public class ManagerService {
     @Transactional(readOnly = true)
     public List<ManagerResponse> getManagers(long todoId) {
         Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+                .orElseThrow(() -> new InvalidRequestException(TODO_NOT_FOUND));
 
         List<Manager> managerList = managerRepository.findByTodoIdWithUser(todo.getId());
 
+        // todo : stream 으로 변경, static method 만들기
         List<ManagerResponse> dtoList = new ArrayList<>();
         for (Manager manager : managerList) {
             User user = manager.getUser();
@@ -76,20 +80,20 @@ public class ManagerService {
     @Transactional
     public void deleteManager(long userId, long todoId, long managerId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new InvalidRequestException("User not found"));
+                .orElseThrow(() -> new InvalidRequestException(USER_NOT_FOUND));
 
         Todo todo = todoRepository.findById(todoId)
-                .orElseThrow(() -> new InvalidRequestException("Todo not found"));
+                .orElseThrow(() -> new InvalidRequestException(TODO_NOT_FOUND));
 
         if (todo.getUser() == null || !ObjectUtils.nullSafeEquals(user.getId(), todo.getUser().getId())) {
-            throw new InvalidRequestException("해당 일정을 만든 유저가 유효하지 않습니다.");
+            throw new InvalidRequestException(INVALID_TODO_CREATOR);
         }
 
         Manager manager = managerRepository.findById(managerId)
-                .orElseThrow(() -> new InvalidRequestException("Manager not found"));
+                .orElseThrow(() -> new InvalidRequestException(MANAGER_NOT_FOUND));
 
         if (!ObjectUtils.nullSafeEquals(todo.getId(), manager.getTodo().getId())) {
-            throw new InvalidRequestException("해당 일정에 등록된 담당자가 아닙니다.");
+            throw new InvalidRequestException(MANAGER_NOT_ASSIGNED);
         }
 
         managerRepository.delete(manager);

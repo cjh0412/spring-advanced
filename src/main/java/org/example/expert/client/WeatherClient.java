@@ -13,6 +13,8 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import static org.example.expert.domain.common.exception.CommonErrorCode.*;
+
 @Component
 public class WeatherClient {
 
@@ -28,11 +30,11 @@ public class WeatherClient {
 
         WeatherDto[] weatherArray = responseEntity.getBody();
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
-            throw new ServerException("날씨 데이터를 가져오는데 실패했습니다. 상태 코드: " + responseEntity.getStatusCode());
+            throw new ServerException(FAILED_TO_FETCH_WEATHER_DATA + " 상태 코드: " + responseEntity.getStatusCode());
         }
 
         if (weatherArray == null || weatherArray.length == 0) {
-                throw new ServerException("날씨 데이터가 없습니다.");
+                throw new ServerException(WEATHER_DATA_NOT_FOUND);
         }
 
         String today = getCurrentDate();
@@ -43,7 +45,7 @@ public class WeatherClient {
             }
         }
 
-        throw new ServerException("오늘에 해당하는 날씨 데이터를 찾을 수 없습니다.");
+        throw new ServerException(TODAY_WEATHER_DATA_NOT_FOUND);
     }
 
     private URI buildWeatherApiUri() {

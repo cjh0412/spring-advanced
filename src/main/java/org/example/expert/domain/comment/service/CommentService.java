@@ -7,6 +7,7 @@ import org.example.expert.domain.comment.dto.response.CommentSaveResponse;
 import org.example.expert.domain.comment.entity.Comment;
 import org.example.expert.domain.comment.repository.CommentRepository;
 import org.example.expert.domain.common.dto.AuthUser;
+import org.example.expert.domain.common.exception.CommonErrorCode;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
@@ -29,7 +30,7 @@ public class CommentService {
     public CommentSaveResponse saveComment(AuthUser authUser, long todoId, CommentSaveRequest commentSaveRequest) {
         User user = User.fromAuthUser(authUser);
         Todo todo = todoRepository.findById(todoId).orElseThrow(() ->
-                new InvalidRequestException("Todo not found"));
+                new InvalidRequestException(CommonErrorCode.TODO_NOT_FOUND));
 
         Comment newComment = new Comment(
                 commentSaveRequest.getContents(),
@@ -51,6 +52,7 @@ public class CommentService {
         List<Comment> commentList = commentRepository.findByTodoIdWithUser(todoId);
 
         List<CommentResponse> dtoList = new ArrayList<>();
+        // todo : stream으로 변경해보기, static method 생성하기
         for (Comment comment : commentList) {
             User user = comment.getUser();
             CommentResponse dto = new CommentResponse(

@@ -23,7 +23,7 @@ import static org.example.expert.domain.common.exception.CommonErrorCode.*;
 @Service
 @RequiredArgsConstructor
 public class ManagerService {
-  // todo : repository 정리 유무 체크하기
+    // todo : repository 정리 유무 체크하기
     private final ManagerRepository managerRepository;
     private final UserRepository userRepository;
     private final TodoRepository todoRepository;

@@ -2,15 +2,12 @@ package org.example.expert.domain.todo.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.expert.client.WeatherClient;
-import org.example.expert.domain.common.dto.AuthUser;
-import org.example.expert.domain.common.exception.CommonErrorCode;
 import org.example.expert.domain.common.exception.InvalidRequestException;
-import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
+import org.example.expert.domain.todo.command.CreateTodoCommand;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
 import org.example.expert.domain.todo.entity.Todo;
 import org.example.expert.domain.todo.repository.TodoRepository;
-import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,17 +25,11 @@ public class TodoService {
     private final TodoRepository todoRepository;
     private final WeatherClient weatherClient;
     @Transactional
-    public TodoSaveResponse saveTodo(AuthUser authUser, TodoSaveRequest todoSaveRequest) {
-        User user = User.fromAuthUser(authUser);
-
+    public TodoSaveResponse saveTodo(CreateTodoCommand command) {
+        User user = User.fromAuthUser(command.getAuthUser());
         String weather = weatherClient.getTodayWeather();
 
-        Todo newTodo = new Todo(
-                todoSaveRequest.getTitle(),
-                todoSaveRequest.getContents(),
-                weather,
-                user
-        );
+        Todo newTodo = command.toDomain(weather, user);
         Todo savedTodo = todoRepository.save(newTodo);
 
         return TodoSaveResponse.toDto(savedTodo);

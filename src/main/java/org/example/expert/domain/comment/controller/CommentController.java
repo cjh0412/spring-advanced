@@ -2,6 +2,7 @@ package org.example.expert.domain.comment.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.expert.domain.comment.command.CreateCommentCommand;
 import org.example.expert.domain.comment.dto.request.CommentSaveRequest;
 import org.example.expert.domain.comment.dto.response.CommentResponse;
 import org.example.expert.domain.comment.dto.response.CommentSaveResponse;
@@ -16,7 +17,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class CommentController {
-
     private final CommentService commentService;
 
     @PostMapping("/todos/{todoId}/comments")
@@ -25,7 +25,8 @@ public class CommentController {
             @PathVariable long todoId,
             @Valid @RequestBody CommentSaveRequest commentSaveRequest
     ) {
-        return ResponseEntity.ok(commentService.saveComment(authUser, todoId, commentSaveRequest));
+        CreateCommentCommand command = new CreateCommentCommand(authUser, todoId, commentSaveRequest.getContents());
+        return ResponseEntity.ok(commentService.saveComment(command));
     }
 
     @GetMapping("/todos/{todoId}/comments")

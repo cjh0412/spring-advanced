@@ -1,12 +1,11 @@
 package org.example.expert.domain.comment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.expert.domain.comment.dto.request.CommentSaveRequest;
+import org.example.expert.domain.comment.command.CreateCommentCommand;
 import org.example.expert.domain.comment.dto.response.CommentResponse;
 import org.example.expert.domain.comment.dto.response.CommentSaveResponse;
 import org.example.expert.domain.comment.entity.Comment;
 import org.example.expert.domain.comment.repository.CommentRepository;
-import org.example.expert.domain.common.dto.AuthUser;
 import org.example.expert.domain.common.exception.CommonErrorCode;
 import org.example.expert.domain.common.exception.InvalidRequestException;
 import org.example.expert.domain.todo.entity.Todo;
@@ -25,17 +24,12 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public CommentSaveResponse saveComment(AuthUser authUser, long todoId, CommentSaveRequest commentSaveRequest) {
-        User user = User.fromAuthUser(authUser);
-        Todo todo = todoRepository.findById(todoId)
+    public CommentSaveResponse saveComment(CreateCommentCommand command) {
+        User user = User.fromAuthUser(command.getAuthUser());
+        Todo todo = todoRepository.findById(command.getTodoId())
                 .orElseThrow(() -> new InvalidRequestException(CommonErrorCode.TODO_NOT_FOUND));
 
-        Comment newComment = new Comment(
-                commentSaveRequest.getContents(),
-                user,
-                todo
-        );
-
+        Comment newComment = command.toDomain(user, todo);
         Comment savedComment = commentRepository.save(newComment);
 
         return CommentSaveResponse.toDto(savedComment);

@@ -3,7 +3,7 @@ package org.example.expert.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.config.PasswordEncoder;
 import org.example.expert.domain.common.exception.InvalidRequestException;
-import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
+import org.example.expert.domain.user.command.ChangePasswordCommand;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.entity.User;
 import org.example.expert.domain.user.repository.UserRepository;
@@ -26,18 +26,18 @@ public class UserService {
     }
 
     @Transactional
-    public void changePassword(long userId, UserChangePasswordRequest userChangePasswordRequest) {
-        User user = userRepository.findById(userId)
+    public void changePassword(ChangePasswordCommand command) {
+        User user = userRepository.findById(command.getUserId())
                 .orElseThrow(() -> new InvalidRequestException(USER_NOT_FOUND));
 
-        if (passwordEncoder.matches(userChangePasswordRequest.getNewPassword(), user.getPassword())) {
+        if (passwordEncoder.matches(command.getNewPassword(), user.getPassword())) {
             throw new InvalidRequestException(PASSWORD_CANNOT_BE_SAME_AS_OLD);
         }
 
-        if (!passwordEncoder.matches(userChangePasswordRequest.getOldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(command.getOldPassword(), user.getPassword())) {
             throw new InvalidRequestException(WRONG_PASSWORD);
         }
 
-        user.changePassword(passwordEncoder.encode(userChangePasswordRequest.getNewPassword()));
+        user.changePassword(passwordEncoder.encode(command.getNewPassword()));
     }
 }

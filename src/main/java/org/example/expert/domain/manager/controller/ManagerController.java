@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.expert.config.JwtUtil;
 import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
+import org.example.expert.domain.manager.command.CreateManagerCommand;
+import org.example.expert.domain.manager.command.DeleteManagerCommand;
 import org.example.expert.domain.manager.dto.request.ManagerSaveRequest;
 import org.example.expert.domain.manager.dto.response.ManagerResponse;
 import org.example.expert.domain.manager.dto.response.ManagerSaveResponse;
@@ -28,7 +30,8 @@ public class ManagerController {
             @PathVariable long todoId,
             @Valid @RequestBody ManagerSaveRequest managerSaveRequest
     ) {
-        return ResponseEntity.ok(managerService.saveManager(authUser, todoId, managerSaveRequest));
+        CreateManagerCommand command = new CreateManagerCommand(authUser, todoId, managerSaveRequest.getManagerUserId());
+        return ResponseEntity.ok(managerService.saveManager(command));
     }
 
     @GetMapping("/todos/{todoId}/managers")
@@ -44,6 +47,8 @@ public class ManagerController {
     ) {
         Claims claims = jwtUtil.extractClaims(bearerToken.substring(7));
         long userId = Long.parseLong(claims.getSubject());
-        managerService.deleteManager(userId, todoId, managerId);
+
+        DeleteManagerCommand command = new DeleteManagerCommand(userId, todoId, managerId);
+        managerService.deleteManager(command);
     }
 }

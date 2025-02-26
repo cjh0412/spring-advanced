@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
+import org.example.expert.domain.todo.command.CreateTodoCommand;
 import org.example.expert.domain.todo.dto.request.TodoSaveRequest;
 import org.example.expert.domain.todo.dto.response.TodoResponse;
 import org.example.expert.domain.todo.dto.response.TodoSaveResponse;
@@ -23,7 +24,9 @@ public class TodoController {
             @Auth AuthUser authUser,
             @Valid @RequestBody TodoSaveRequest todoSaveRequest
     ) {
-        return ResponseEntity.ok(todoService.saveTodo(authUser, todoSaveRequest));
+        CreateTodoCommand command =
+                new CreateTodoCommand(authUser, todoSaveRequest.getTitle(), todoSaveRequest.getContents());
+        return ResponseEntity.ok(todoService.saveTodo(command));
     }
 
     @GetMapping("/todos")

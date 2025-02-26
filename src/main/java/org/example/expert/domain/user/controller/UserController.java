@@ -3,6 +3,7 @@ package org.example.expert.domain.user.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.expert.domain.common.annotation.Auth;
 import org.example.expert.domain.common.dto.AuthUser;
+import org.example.expert.domain.user.command.ChangePasswordCommand;
 import org.example.expert.domain.user.dto.request.UserChangePasswordRequest;
 import org.example.expert.domain.user.dto.response.UserResponse;
 import org.example.expert.domain.user.service.UserService;
@@ -22,6 +23,9 @@ public class UserController {
 
     @PutMapping("/users")
     public void changePassword(@Auth AuthUser authUser, @RequestBody UserChangePasswordRequest userChangePasswordRequest) {
-        userService.changePassword(authUser.getId(), userChangePasswordRequest);
+        ChangePasswordCommand command = new ChangePasswordCommand(authUser.getId(),
+                        userChangePasswordRequest.getOldPassword(),
+                        userChangePasswordRequest.getNewPassword());
+        userService.changePassword(command);
     }
 }

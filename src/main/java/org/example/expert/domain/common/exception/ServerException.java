@@ -1,8 +1,18 @@
 package org.example.expert.domain.common.exception;
 
-public class ServerException extends RuntimeException {
+import lombok.Getter;
 
-    public ServerException(String message) {
+@Getter
+public class ServerException extends RuntimeException {
+    private final String message;
+
+    public ServerException(CommonErrorCode errorCode) {
+        this.message = errorCode.getMessage();
+    }
+
+    // 문자열 메세지를 받은 생성자
+    public ServerException(String message){
         super(message);
+        this.message = null;
     }
 }

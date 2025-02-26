@@ -9,6 +9,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.time.LocalDateTime;
 
+import static org.example.expert.domain.common.exception.CommonErrorCode.ONLY_ADMIN_ALLOWED;
+
 @Slf4j
 @Component
 public class LoggingInterceptor implements HandlerInterceptor {
@@ -20,7 +22,7 @@ public class LoggingInterceptor implements HandlerInterceptor {
 
         if (!"ADMIN".equals(userRole)) {
             log.warn("요청시간 : [{}], URL : [{}], userRole : [{}]", requestTime, request.getRequestURL(), userRole);
-            throw new ServerException("관리자로 로그인 후 사용가능합니다.");
+            throw new ServerException(ONLY_ADMIN_ALLOWED);
         }
 
         log.info("요청시간 : [{}], URL : [{}], userRole : [{}]", requestTime, request.getRequestURL(), userRole);

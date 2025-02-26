@@ -27,6 +27,7 @@ public class CommentService {
     @Transactional
     public CommentSaveResponse saveComment(AuthUser authUser, long todoId, CommentSaveRequest commentSaveRequest) {
         User user = User.fromAuthUser(authUser);
+      
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new InvalidRequestException(CommonErrorCode.TODO_NOT_FOUND));
 
@@ -43,6 +44,7 @@ public class CommentService {
 
     @Transactional(readOnly = true)
     public List<CommentResponse> getComments(long todoId) {
+
         return commentRepository.findByTodoIdWithUser(todoId)
                 .stream()
                 .map(CommentResponse :: toDto)

@@ -26,7 +26,7 @@ import static org.example.expert.domain.common.exception.CommonErrorCode.*;
 @Service
 @RequiredArgsConstructor
 public class ManagerService {
-  // todo : repository 정리 유무 체크하기
+
     private final ManagerRepository managerRepository;
     private final UserRepository userRepository;
     private final TodoRepository todoRepository;
@@ -52,10 +52,7 @@ public class ManagerService {
         Manager newManagerUser = new Manager(managerUser, todo);
         Manager savedManagerUser = managerRepository.save(newManagerUser);
 
-        return new ManagerSaveResponse(
-                savedManagerUser.getId(),
-                new UserResponse(managerUser.getId(), managerUser.getEmail())
-        );
+        return  ManagerSaveResponse.toDto(savedManagerUser);
     }
 
     @Transactional(readOnly = true)
@@ -63,18 +60,10 @@ public class ManagerService {
         Todo todo = todoRepository.findById(todoId)
                 .orElseThrow(() -> new InvalidRequestException(TODO_NOT_FOUND));
 
-        List<Manager> managerList = managerRepository.findByTodoIdWithUser(todo.getId());
-
-        // todo : stream 으로 변경, static method 만들기
-        List<ManagerResponse> dtoList = new ArrayList<>();
-        for (Manager manager : managerList) {
-            User user = manager.getUser();
-            dtoList.add(new ManagerResponse(
-                    manager.getId(),
-                    new UserResponse(user.getId(), user.getEmail())
-            ));
-        }
-        return dtoList;
+        return managerRepository.findByTodoIdWithUser(todo.getId())
+                .stream()
+                .map(ManagerResponse ::toDto)
+                .toList();
     }
 
     @Transactional

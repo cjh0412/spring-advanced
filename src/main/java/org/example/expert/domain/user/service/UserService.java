@@ -30,12 +30,12 @@ public class UserService {
         User user = userRepository.findById(command.getUserId())
                 .orElseThrow(() -> new InvalidRequestException(USER_NOT_FOUND));
 
-        if (passwordEncoder.matches(command.getNewPassword(), user.getPassword())) {
-            throw new InvalidRequestException(PASSWORD_CANNOT_BE_SAME_AS_OLD);
-        }
-
         if (!passwordEncoder.matches(command.getOldPassword(), user.getPassword())) {
             throw new InvalidRequestException(WRONG_PASSWORD);
+        }
+
+        if (passwordEncoder.matches(command.getNewPassword(), user.getPassword())) {
+            throw new InvalidRequestException(PASSWORD_CANNOT_BE_SAME_AS_OLD);
         }
 
         user.changePassword(passwordEncoder.encode(command.getNewPassword()));
